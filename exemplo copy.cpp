@@ -15,30 +15,23 @@ int main() {
     // Alocando a estrutura na memória
     Dados *dados = new Dados;
     
-    // Dados de exemplo
-    dados->numero = 10;
-    dados->decimal = 3.14f;
-    dados->caractere = 'A';
-
     // Abre um arquivo binário para escrita
-    ofstream arquivo("dados.bin", ios::binary);
+    ifstream arquivo("dados.bin", ios::binary);
 
     if (!arquivo) {
         cerr << "Erro ao abrir o arquivo." << endl;
-        delete dados; // Liberar a memória alocada
         return 1;
     }
 
     // Escreve os dados no arquivo
-    arquivo.write(reinterpret_cast<const char*>(dados), sizeof(Dados));
+    arquivo.read(reinterpret_cast<char*>(dados), sizeof(Dados));
 
     // Fecha o arquivo
     arquivo.close();
-
-    // Liberar a memória alocada
-    delete dados;
-
-    cout << "Dados salvos no arquivo binario com sucesso." << endl;
+    
+    cout << dados->caractere << endl;
+    cout << dados->decimal << endl;
+    cout << dados->numero << endl;
 
     return 0;
 }

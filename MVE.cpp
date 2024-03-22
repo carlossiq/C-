@@ -48,31 +48,37 @@ using std::setw;
 /* Estruturas - 3 - Aluno, Disciplina, Matrícula ::  Listas encadeadas */
 
 /* Aluno : 4 Campos*/
-struct data_Aluno
-{
+ struct data_Aluno
+ {
     string cod;
     string nome;
     string CPF;
-    data_Aluno *next;
+ };
+
+struct node_Aluno
+{
+    data_Aluno data;
+    node_Aluno *next;
 };
 
+
 /* Disciplina : 5 Campos*/
-struct data_Disciplina
+struct node_Disciplina
 {
     string cod;
     string nome;
     string professor;
     int credito;
-    data_Disciplina *next;
+    node_Disciplina *next;
 };
 
 /* Relações de Matrícula por período : 5 Campos*/
-struct data_Matricula
+struct node_Matricula
 {
     int periodo;
     string cod1;
     string cod2;
-    data_Matricula *next;
+    node_Matricula *next;
 };
 
 /* Mostra o dia no sistema */
@@ -99,13 +105,12 @@ void clean()
 class Data_In
 {
     public:
-        data_Aluno* begin_Al()
+        node_Aluno* begin_Al()
         {
             return line(NULL, "", "", "");
-        }
-               
+        }  
 
-        void newline(data_Aluno* lista)
+        void newline(node_Aluno* lista)
         {
             system("cls");
             title();
@@ -121,27 +126,59 @@ class Data_In
 
             line(lista, codigo, nome, CPF);
 
-            cout << endl << "aluno inserido com sucesso!";
-            getchar();
-            system ("cls");
+            title();
+            system("cls");
+            cout << endl << "Aluno inserido com sucesso!";
+            clean();
         }
 
         /* Carrega o arquivo binário na memória*/
-        void chargelines (string nome_arquivo)
+        void open(string arq_bin, node_Aluno* lista_aluno, node_Disciplina* lista_dis, node_Matricula* lista_mat)
         {
-            ofstream arquivo(nome_arquivo, ios::out | ios:: binary);
-        }
+            inicialize(arq_bin);
+            if (tipo==1)
+            {   
+                data_Aluno auxiliar;
+                arquivo.open(arq_bin, ios::out | ios::binary);
+                arquivo.seekg(sizeof(int));
+                while(!arquivo.eof())
+                {
+                    arquivo.read(reinterpret_cast<char*>(&auxiliar),sizeof(data_Aluno));
+                    cout << auxiliar.cod << endl;
+                    cout << auxiliar.nome << endl;
+                    cout << auxiliar.CPF << endl;
+                    
+                    //line(lista_aluno, auxiliar.cod, auxiliar.nome, auxiliar.CPF); contador++;
+                }
+                
+                arquivo.close();
+                clean();
+            }
+    }
 
     private:
-        data_Aluno* line(data_Aluno* aluno, string cod, string nome, string CPF)
-        {
+        int tipo;
+        ifstream arquivo;
     
-            data_Aluno* node = new data_Aluno;
+        void inicialize(string arq_bin)
+        {
+            arquivo.open(arq_bin, ios::out | ios::binary);
+            arquivo.read(reinterpret_cast<char*>(&tipo), sizeof(int));
+            arquivo.close();
+        }
+
+        /*Cria novos nos para Alunos*/
+        node_Aluno* line(node_Aluno* aluno, string cod, string nome, string CPF)
+        {
+            
+            if (aluno && aluno->next) //vai para o final da lista de list e list.next forem diferentes de NULL
+                return line(aluno->next, cod, nome, CPF); 
+            node_Aluno* node = new node_Aluno;
 
             node->next=NULL;
-            node->cod=cod;
-            node->nome=nome;
-            node->CPF=CPF;
+            node->data.cod=cod;
+            node->data.nome=nome;
+            node->data.CPF=CPF;
 
             if(aluno)
             {
@@ -159,7 +196,7 @@ class Data_Show
 {
     public:
         /* Função sobrecarregada para imprimir os dados das listas de acordo com o tipo*/    
-        void list(data_Aluno* lista)
+        void list(node_Aluno* lista)
         {   
             system("cls");
             if(lista->next == NULL)
@@ -173,7 +210,7 @@ class Data_Show
                 cout << "----------------------------------------------------------------------------------"<< endl;
                 while(lista != NULL)
                 {
-                    cout << setw(4) << lista->cod << setw(20) << lista->nome << setw(12) << lista->CPF << endl;
+                    cout << setw(4) << lista->data.cod << setw(20) << lista->data.nome << setw(12) << lista->data.CPF << endl;
                     lista = lista->next;
                 }
                 cout <<endl;
@@ -194,38 +231,44 @@ class Data_Search
 class Data_Save
 {
     public:
-    void save(data_Aluno* lista)
+    void save(node_Aluno* lista)
     {
             
         int tipo = 1;
-        ofstream arquivo(AL, ios::out | ios:: binary | ios::trunc);//ate (posição final) //app escritas no final //tellp posição atual
-        arquivo.write(reinterpret_cast<const char*>(&tipo), sizeof(int));
-        while(lista != NULL)
-        {
-            arquivo.write(reinterpret_cast<const char*>(lista), sizeof(data_Aluno));
+        out_arquivo.open(AL, ios::out | ios:: binary | ios::trunc);//ate (posição final) //app escritas no final //tellp posição atual
+        out_arquivo.write(reinterpret_cast<const char*>(&tipo), sizeof(int));
+        data_Aluno auxiliar;
+        lista=lista->next;
+
+        auxiliar.cod=lista->data.cod;
+        auxiliar.nome=lista->data.nome;
+        auxiliar.CPF=lista->data.CPF;
+
+        out_arquivo.write(reinterpret_cast<const char*>(&auxiliar), sizeof(auxiliar));
+
+        /*while(lista != NULL)
+        {   
+            auxiliar.cod=lista->data.cod;
+            auxiliar.nome=lista->data.nome;
+            auxiliar.CPF=lista->data.CPF;
+            cout <<"verificando:"<< auxiliar.cod << "ok" << endl;
+            cout <<"verificando:"<< auxiliar.nome << "ok" << endl;
+            cout <<"verificando:"<< auxiliar.CPF << "ok" << endl;
+
+            arquivo.write(reinterpret_cast<const char*>(&auxiliar), sizeof(data_Aluno));
             lista = lista->next;
-        }
-        arquivo.close();
+        }*/
+
+        cout <<"Arquivo salvo com sucesso!";
+        out_arquivo.close();
             
 
         clean();
     }
+    private:
+    ofstream out_arquivo;
 
 };
-
-/* Classe de funções carregamento de arquivos*/
-class Data_Charge
-{
-    public:
-    void type()
-    {
-        int tipo;
-        ifstream arquivo(AL, ios::out | ios:: binary);
-        arquivo.read(reinterpret_cast<char*>(&tipo), sizeof(int));
-    }
-    
-};
-
 
 /*Classe menu de opções*/
 enum tipo {cadastrar_aluno=1, cadastrar_disciplina, matricular, listar_aluno, listar_disciplina, busca_aluno, busca_dis, salvar, sair };
@@ -238,12 +281,12 @@ class Menu
             title();
             cout << "[1] - Cadastrar Aluno" << endl;
             cout << "[2] - Cadastrar Disciplina" << endl;
-            cout << "[3] - Matricular Aluno" << endl << endl;
-            cout << "[4] - Listar Alunos" << endl << endl;
-            cout << "[5] - Listar Disciplinas" << endl << endl;
-            cout << "[6] - Busca por Aluno" << endl << endl;
-            cout << "[7] - Busca por Disciplina" << endl << endl;
-            cout << "[8] - Salvar" << endl << endl;
+            cout << "[3] - Matricular Aluno" << endl;
+            cout << "[4] - Listar Alunos" << endl;
+            cout << "[5] - Listar Disciplinas" << endl;
+            cout << "[6] - Busca por Aluno" << endl;
+            cout << "[7] - Busca por Disciplina" << endl;
+            cout << "[8] - Salvar" << endl;
             cout << "[9] - Sair" << endl << endl;
             cout << "Digite a opcao acima: ";
         }
@@ -269,7 +312,9 @@ int main()
     Data_Save sv;
     
     /*Alocação dinâmica das listas encadeadas*/
-    data_Aluno *lista_aluno = in.begin_Al();
+    node_Aluno *lista_aluno = in.begin_Al();
+    node_Disciplina *lista_disciplina = NULL;
+    node_Matricula *lista_matricula = NULL;
        
     /*carregando arquivos*/
     
@@ -314,7 +359,8 @@ int main()
             exit(1);
             break;
         
-        default:
+        case 0:
+            in.open(AL, lista_aluno, lista_disciplina, lista_matricula);
             break;
         }
     }
