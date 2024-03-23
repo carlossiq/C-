@@ -50,9 +50,9 @@ using std::setw;
 /* Aluno : 4 Campos*/
  struct data_Aluno
  {
-    string cod;
-    string nome;
-    string CPF;
+    char cod[5];
+    char nome[51];
+    char CPF[12];
  };
 
 struct node_Aluno
@@ -65,9 +65,9 @@ struct node_Aluno
 /* Disciplina : 5 Campos*/
 struct node_Disciplina
 {
-    string cod;
-    string nome;
-    string professor;
+    char cod[6];
+    char nome[51];
+    char professor[51];
     int credito;
     node_Disciplina *next;
 };
@@ -76,8 +76,8 @@ struct node_Disciplina
 struct node_Matricula
 {
     int periodo;
-    string cod1;
-    string cod2;
+    char cod1[5];
+    char cod2[6];
     node_Matricula *next;
 };
 
@@ -91,6 +91,7 @@ void show_time()
 
 void title()
 {
+    system("cls");
     cout << PRESENT << " "; show_time();
 }
 
@@ -101,39 +102,32 @@ void clean()
     system("cls");            
 }
 
-/* Classe de funções de inserção de dados com sobrecarga de funções*/
+/* Classe de funções com inserção de dados com sobrecarga de funções*/
 class Data_In
 {
     public:
-        node_Aluno* begin_Al()
+        void newline(node_Aluno *&lista)
         {
-            return line(NULL, "", "", "");
-        }  
-
-        void newline(node_Aluno* lista)
-        {
-            system("cls");
             title();
             cout << "Cadastro de Alunos" << endl;
             cout << "Insira abaixo o Codigo, Nome e o CPF." << endl;
-            string codigo, nome, CPF;
+            char codigo[5]; char nome[51]; char CPF[12];
             cout << "Codigo: " << endl;
-            getline(cin,codigo);
+            cin >> codigo;
             cout << "Nome: " << endl;
-            getline(cin,nome);
+            cin >> nome;
             cout << "CPF: " << endl;
-            getline(cin,CPF);
+            cin >> CPF;
 
-            line(lista, codigo, nome, CPF);
+            line(*&lista, codigo, nome, CPF);
 
             title();
-            system("cls");
             cout << endl << "Aluno inserido com sucesso!";
             clean();
         }
 
         /* Carrega o arquivo binário na memória*/
-        void open(string arq_bin, node_Aluno* lista_aluno, node_Disciplina* lista_dis, node_Matricula* lista_mat)
+        void open(const char* arq_bin, node_Aluno *&lista_aluno, node_Disciplina* lista_dis, node_Matricula* lista_mat)
         {
             inicialize(arq_bin);
             if (tipo==1)
@@ -141,14 +135,9 @@ class Data_In
                 data_Aluno auxiliar;
                 arquivo.open(arq_bin, ios::out | ios::binary);
                 arquivo.seekg(sizeof(int));
-                while(!arquivo.eof())
-                {
-                    arquivo.read(reinterpret_cast<char*>(&auxiliar),sizeof(data_Aluno));
-                    cout << auxiliar.cod << endl;
-                    cout << auxiliar.nome << endl;
-                    cout << auxiliar.CPF << endl;
-                    
-                    //line(lista_aluno, auxiliar.cod, auxiliar.nome, auxiliar.CPF); contador++;
+                while(arquivo.read(reinterpret_cast<char*>(&auxiliar),sizeof(auxiliar)))
+                {   
+                    line(*&lista_aluno, auxiliar.cod, auxiliar.nome, auxiliar.CPF);
                 }
                 
                 arquivo.close();
@@ -160,32 +149,42 @@ class Data_In
         int tipo;
         ifstream arquivo;
     
-        void inicialize(string arq_bin)
+        void inicialize(const char* arq_bin)
         {
             arquivo.open(arq_bin, ios::out | ios::binary);
+            if (!arquivo.is_open())
+            {   
+                title();
+                cerr << "Erro ao abrir o arquivo." << endl;
+                clean();
+                return;
+            }
             arquivo.read(reinterpret_cast<char*>(&tipo), sizeof(int));
             arquivo.close();
         }
 
-        /*Cria novos nos para Alunos*/
-        node_Aluno* line(node_Aluno* aluno, string cod, string nome, string CPF)
+        /*Cria novos nos para Alunos com passagem por referência*/
+        void line(node_Aluno *&lista, char cod[], char nome[], char CPF[])
         {
-            
-            if (aluno && aluno->next) //vai para o final da lista de list e list.next forem diferentes de NULL
-                return line(aluno->next, cod, nome, CPF); 
-            node_Aluno* node = new node_Aluno;
+            node_Aluno* node = new node_Aluno();
 
-            node->next=NULL;
-            node->data.cod=cod;
-            node->data.nome=nome;
-            node->data.CPF=CPF;
+            strcpy(node->data.cod,cod);
+            strcpy(node->data.nome,nome);
+            strcpy(node->data.CPF,CPF);
+            node->next = nullptr;
 
-            if(aluno)
+            if(lista == nullptr)
             {
-                aluno->next=node;
+                lista = node;
+                return;
             }
-
-            return aluno ? aluno : node; 
+            
+            node_Aluno *aux = lista;
+            while(aux->next != nullptr)
+            {
+                aux = aux->next;
+            }
+            aux->next = node;    
         }
 };
 
@@ -196,10 +195,10 @@ class Data_Show
 {
     public:
         /* Função sobrecarregada para imprimir os dados das listas de acordo com o tipo*/    
-        void list(node_Aluno* lista)
+        void print_list(node_Aluno* lista)
         {   
-            system("cls");
-            if(lista->next == NULL)
+            title();
+            if(lista == nullptr)
             {
                 cout << "Nao ha alunos cadastrados.";
                 clean();
@@ -207,15 +206,17 @@ class Data_Show
             }
             else
             {
-                cout << "----------------------------------------------------------------------------------"<< endl;
-                while(lista != NULL)
+                //cout << "----------------------------------------------------------------------------------"<< endl;
+                while(lista != nullptr)
                 {
                     cout << setw(4) << lista->data.cod << setw(20) << lista->data.nome << setw(12) << lista->data.CPF << endl;
                     lista = lista->next;
                 }
-                cout <<endl;
-                cout << "----------------------------------------------------------------------------------"<< endl;
-                cout <<endl;
+                //cout <<endl;
+                //cout << "----------------------------------------------------------------------------------"<< endl;
+                cout << endl;
+                cout << "Pressione qualquer tecla para continuar..." << endl;
+                clean();
             }
         }
             
@@ -237,28 +238,17 @@ class Data_Save
         int tipo = 1;
         out_arquivo.open(AL, ios::out | ios:: binary | ios::trunc);//ate (posição final) //app escritas no final //tellp posição atual
         out_arquivo.write(reinterpret_cast<const char*>(&tipo), sizeof(int));
-        data_Aluno auxiliar;
-        lista=lista->next;
+        data_Aluno auxiliar;        
 
-        auxiliar.cod=lista->data.cod;
-        auxiliar.nome=lista->data.nome;
-        auxiliar.CPF=lista->data.CPF;
-
-        out_arquivo.write(reinterpret_cast<const char*>(&auxiliar), sizeof(auxiliar));
-
-        /*while(lista != NULL)
+        while(lista != nullptr)
         {   
-            auxiliar.cod=lista->data.cod;
-            auxiliar.nome=lista->data.nome;
-            auxiliar.CPF=lista->data.CPF;
-            cout <<"verificando:"<< auxiliar.cod << "ok" << endl;
-            cout <<"verificando:"<< auxiliar.nome << "ok" << endl;
-            cout <<"verificando:"<< auxiliar.CPF << "ok" << endl;
-
-            arquivo.write(reinterpret_cast<const char*>(&auxiliar), sizeof(data_Aluno));
+            strcpy(auxiliar.cod, lista->data.cod);
+            strcpy(auxiliar.nome, lista->data.nome);
+            strcpy(auxiliar.CPF, lista->data.CPF);
+            out_arquivo.write(reinterpret_cast<const char*>(&auxiliar), sizeof(auxiliar));          
             lista = lista->next;
-        }*/
-
+        }
+        title();
         cout <<"Arquivo salvo com sucesso!";
         out_arquivo.close();
             
@@ -312,7 +302,7 @@ int main()
     Data_Save sv;
     
     /*Alocação dinâmica das listas encadeadas*/
-    node_Aluno *lista_aluno = in.begin_Al();
+    node_Aluno *lista_aluno = nullptr;
     node_Disciplina *lista_disciplina = NULL;
     node_Matricula *lista_matricula = NULL;
        
@@ -336,7 +326,7 @@ int main()
             break;
 
         case listar_aluno:
-            sh.list(lista_aluno);
+            sh.print_list(lista_aluno);
             break;
         
         case listar_disciplina:
