@@ -1,7 +1,3 @@
-#include <iostream>
-using std::cout;
-using std::endl;
-
 #include "Friends.h"
 
 int main()
@@ -17,5 +13,6 @@ cout << database.searchCharacter("Gunther") << endl; cout << database.searchChar
 database.relate(c2, c5, "irmãos"); database.relate(c2, c4, "casados");
 database.relate(c1, c2, "roommates"); database.relate(c4, c6, "roommates");
 database.deleteCharacter("Phoebe Buffay"); database.imprimir();
+
 return 0;
 }

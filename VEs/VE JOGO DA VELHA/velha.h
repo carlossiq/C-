@@ -18,6 +18,8 @@
 #define VELHA_H
 
 #include <iostream>
+#include <cstring>
+#include <windows.h>
 
 #define pA 'x'
 #define pB 'o'
@@ -28,11 +30,13 @@ enum {vitoriaO = 0, vitoriaX, empate, valida,invalida};
 class Velha
 {
     private:
+    std::string ganhador;
     int size;
     bool time; //true a;x ; false b;o
     char **array;
     int jogadas;
     int endGame;
+    bool fim;
 
     int winner();
     void trace();
@@ -45,9 +49,11 @@ class Velha
     Velha (const int); //recebe o tamanho do tabuleiro
     int jogar(int, int); //recebe as coordenadas, controla de quem é a vez de jogar(time)
     void print();
+    bool getFim();
+    std::string getWinner();
 };
 
-Velha::Velha (const int n) : size(n), time(true), jogadas(0), endGame(n*n) 
+Velha::Velha (const int n) : ganhador("empate"), size(n), time(true), jogadas(0), endGame(n*n), fim(0)
 {
     array = new char*[size];
     for (int i = 0; i < size; i++) array[i] = new char[size];
@@ -68,76 +74,112 @@ void Velha::trace()
     }
     std::cout << std::endl;
 }
+
+//funções para verificar se há vitoria
 char Velha::line()
 {
-    int counter, i = 0, j = 0;
-    for (i = 0; i < size; i++)
+    // Verifica cada linha para ver se todos os elementos são iguais
+    for (int i = 0; i < size; i++)
     {
-        counter = 0;
-        for (j = 0; j < size - 1; j++)
+        int counter = 0;
+        // Compara cada elemento da linha com o próximo
+        for (int j = 0; j < size - 1; j++)
         {
-            if(array[i][j] != array[i][j+1]) break;
-            else counter++;
+            if (array[i][j] != array[i][j+1])
+                break;
+            else
+                counter++;
         }
-        if (counter == size - 1) return array[i][0];
+        // Se todos os elementos forem iguais, retorna o elemento da linha
+        if (counter == size - 1)
+            return array[i][0];
     }
+    // Se nenhuma linha completa foi encontrada, retorna '\0'
     return '\0';
 }
+
 char Velha::column()
 {
-    int counter, i = 0, j = 0;
-    for (i = 0; i < size; i++)
+    // Verifica cada coluna para ver se todos os elementos são iguais
+    for (int i = 0; i < size; i++)
     {
-        counter = 0;
-        for (j = 0; j < size - 1; j++)
+        int counter = 0;
+        // Compara cada elemento da coluna com o próximo
+        for (int j = 0; j < size - 1; j++)
         {
-            if(array[j][i] != array[j+1][i]) break;
-            else counter++;
+            if (array[j][i] != array[j+1][i])
+                break;
+            else
+                counter++;
         }
-        if (counter == size - 1) return array[0][i];
+        // Se todos os elementos forem iguais, retorna o elemento da coluna
+        if (counter == size - 1)
+            return array[0][i];
     }
+    // Se nenhuma coluna completa foi encontrada, retorna '\0'
     return '\0';
 }
+
 char Velha::diagonalFirst()
-{   
-    int counter = 0, i = 0, j = 0;
-    for (i = 0, j = 0; i < size-1, j < size-1; i++, j++)
+{
+    int counter = 0;
+    // Verifica se todos os elementos na diagonal principal são iguais
+    for (int i = 0; i < size - 1; i++)
     {
-        if(array[i][j] != array[j+1][i+1]) break;
-        else return array[0][0];
+        if (array[i][i] != array[i+1][i+1])
+            break;
+        counter++;
     }
+    // Se todos os elementos da diagonal principal forem iguais, retorna o elemento no topo
+    if (counter == size - 1)
+        return array[0][0];
+    // Caso contrário, retorna '\0'
     return '\0';
 }
+
 char Velha::diagonalSecond()
 {
-    for (int i = 0, j = size-1; i < size-1, j > 0; i++, j--)
+    int counter = 0;
+    // Verifica se todos os elementos na diagonal secundária são iguais
+    for (int i = 0, j = size - 1; i < size - 1 && j > 0; i++, j--) //se utilizar a vírgula ao invés do loop, ele descarta a primeira a primeira condição, portando deve-se utilizar &&
     {
-        if(array[i][j] != array[j-1][i+1]) break;
-        else return array[0][size-1];
+        if (array[i][j] != array[i + 1][j - 1])
+            break;
+        counter++;
     }
+    // Se todos os elementos da diagonal secundária forem iguais, retorna o elemento no topo desta diagonal
+    if (counter == size - 1)
+        return array[0][size - 1];
+    // Caso contrário, retorna '\0'
     return '\0';
 }
+
 int Velha::winner()
 {
     char L = line(), C = column(), D1 = diagonalFirst(), D2 = diagonalSecond();
-    if(L)
+
+    if(line()=='x' || line()=='o')
     {
-        if (L == 'o') return 0;
+        std::cout << "L positivo" << std::endl; 
+        if (L == 'x') return 0;
         else return 1;
     }
         else if(C)
         {
-            if (C == 'o') return 0;
+        std::cout << "C positivo" << std::endl; 
+            if (C == 'x') return 0;
             else return 1;
         }
             else if(D1)
             {
-                if (D1 == 'o') return 0;
+        std::cout << "D1 positivo" << std::endl; 
+                if (D1 == 'x') return 0;
                 else return 1;
             }
                 else if(D2)
                 {
-                    if (D2 == 'o') return 0;
+        std::cout << "D2 positivo" << std::endl; 
+                    if (D2 == 'x') return 0;
                     else return 1;
                 }
                     else return -1;
@@ -145,6 +187,9 @@ int Velha::winner()
 
 void Velha::print()
 {
+    //system("cls");
+    puts("");
+    std::cout << "JOGO DA VELHA\n\n";
     for (int i = 0; i < size; i++)
     {
         for (int j = 0; j <  size; j++)
@@ -158,19 +203,82 @@ void Velha::print()
 
 int Velha::jogar(int x, int y)
 {
-    if( !(x>0 && x <=size) || !(y>0 && y<=size)) return invalida;
+    if(jogadas == endGame)
+    {   
+        //std::cout << "Jogo empatado!";
+        //std::cin.ignore();
+        //getchar();
+        fim = true;
+        return empate;
+    }
     else
     {
-        if(time == true) array[x-1][y-1] = pA;
-        else array[x-1][y-1] = pB;
-        jogadas++;
-        if(jogadas >= size)
+        if( !(x>0 && x <=size) || !(y>0 && y<=size) || (array[x-1][y-1] != ' '))
         {
-            if (winner() == 0) return vitoriaO;
-            if (winner() == 1) return vitoriaX;
+            std::cout << "Jogada invalida!";
+            std::cin.ignore();
+            getchar();
+            return invalida;
         }
-    }
-    
+        else
+        {
+            if(time == true) array[x-1][y-1] = pA;      //se for a vez de X, preencher com pA = x
+            else array[x-1][y-1] = pB;                  //do contrário, preencher com pB = o
+            {
+                if(jogadas >= size)                     //numero mínimo de jogadas para haver vitória
+                {
+                    if (winner() == 0)
+                    {
+                        std::string player1 = "Player 1 ganhou!";
+                        ganhador = player1;
+                        std::cin.ignore();
+                        getchar();
+                        fim = true;
+                        return vitoriaX;
+                    }
+                    else
+                    {
+                        if (winner() == 1)
+                        {
+                            std::string player2 = "Player 2 ganhou!";
+                            ganhador = player2;
+                            std::cin.ignore();
+                            getchar();
+                            fim = true;
+                            return vitoriaO;
+                        }
+                        else
+                        {
+                            jogadas++;                             //controla o numeros de lances
+                            time = !time;
+                            return valida;
+                        }
+                    }
+                }
+                else
+                {
+                    jogadas++;                             //controla o numeros de lances
+                    time = !time;
+                    return valida;
+                }
+            }
+        }
+    }    
 }
+
+bool Velha::getFim()
+{
+    return fim;
+}
+
+std::string Velha::getWinner()
+{
+    if(ganhador.compare("empate") == 0) std::cout << "Jogo empatado!";
+    else 
+    {
+        return ganhador;
+    }
+}
+
 
 #endif

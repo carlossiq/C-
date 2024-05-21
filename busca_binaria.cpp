@@ -1,5 +1,6 @@
 #include <iostream>
 
+
 // Função que implementa a busca binária
 int binarySearch(int arr[], int l, int r, int x) { //left right
     while (l <= r) {
