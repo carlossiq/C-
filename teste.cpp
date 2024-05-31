@@ -16,16 +16,14 @@ using std::vector;
 #include <string>
 using std::string;
 
+void mais(int *a)
+{
+    (*a)++;
+}
+
 int main()
 {
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < m; j++)
-        {
-            for(int l = 0; l < 4; l++)
-            {
-                if(l < n)
-            }
-        }
-    }
+    int a = 10;
+    mais(&a);
+    cout << a << endl;
 }
