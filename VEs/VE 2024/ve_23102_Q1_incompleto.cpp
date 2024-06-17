@@ -66,7 +66,7 @@ class Lig4
     {
         field = new int*[m];
         for(int i = 0; i < m; i++) field[i] = new int[n];
-        for(int i = 0; i < m; i++)
+        for(int i = 0; i < n; i++)
             for(int j = 0; j < n; j++)
             {
                 field[j][i] = 0;
@@ -107,6 +107,7 @@ class Lig4
 
     void jogar(int coluna)
     {
+        coluna--;   
         if(counter == end)
         {
             cout << "jogo encerrado!" <<endl;
@@ -159,21 +160,6 @@ class Lig4
 int main()
 {
     Lig4 game(7, 6);
-    game.display();
-    game.jogar(0);
-    game.alternarVez();
-    game.jogar(1);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);
-    game.jogar(2);                  //jogada invalida
-    //game.jogar(2);
-    //game.jogar(3);
-    //game.jogar(0);
     game.display();
     return 0;
 }
